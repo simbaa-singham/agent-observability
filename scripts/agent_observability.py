@@ -33,6 +33,7 @@ Available tools:
 
 If you need a tool to answer, respond with ONLY this JSON, nothing else:
 {"tool": "<tool name>", "args": {<arguments>}}
+Call one tool per reply; you will get its result before calling the next.
 
 Once you have everything you need, respond in plain English - that is
 the final answer shown to the user, not JSON."""
@@ -83,12 +84,17 @@ def call_llm_logged(messages: list[dict]) -> str:
 
 
 def parse_tool_call(text: str) -> dict | None:
-    try:
-        parsed = json.loads(text)
-    except json.JSONDecodeError:
-        return None
-    if isinstance(parsed, dict) and "tool" in parsed:
-        return parsed
+    """Returns the first {"tool": ...} JSON object in the reply - models often add prose around it."""
+    decoder = json.JSONDecoder()
+    for i, ch in enumerate(text):
+        if ch != "{":
+            continue
+        try:
+            parsed, _ = decoder.raw_decode(text, i)   # parses one JSON value starting at i, ignores the rest
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, dict) and "tool" in parsed:
+            return parsed
     return None
 
 
