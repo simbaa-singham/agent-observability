@@ -1,0 +1,9 @@
+venv/
+.env
+__pycache__/
+*.pyc
+.idea/
+.vscode/
+# runtime files written by the scripts (folders kept via .gitkeep)
+logs/*
+!logs/.gitkeep
